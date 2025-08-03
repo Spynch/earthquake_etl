@@ -4,14 +4,18 @@
 
 ## Структура проекта
 
-- `dags/` – DAG-файлы Airflow.
-  - `raw_from_api_to_s3.py` – загрузка данных из публичного API USGS и сохранение их в Minio в формате Parquet.
-  - `raw_from_s3_to_pg.py` – перенос файлов из Minio в PostgreSQL в слой ODS.
-  - `fct_avg_day_earthquake.py` – вычисление средней магнитуды землетрясений за день и запись результата в слой DM.
-  - `fct_count_day_earthquake.py` – расчёт количества землетрясений за день и запись результата в слой DM.
-- `docker-compose.yaml` – конфигурация окружения для локального запуска: Airflow с CeleryExecutor, PostgreSQL, Minio, Metabase и другие сервисы.
-- `metabase/` – Dockerfile для Metabase с драйвером DuckDB для подключения к хранилищу.
-- `requirements.txt` – список Python-зависимостей проекта.
+```text
+earthquake_etl/
+├── dags/
+│   ├── raw_from_api_to_s3.py
+│   ├── raw_from_s3_to_pg.py
+│   ├── fct_avg_day_earthquake.py
+│   └── fct_count_day_earthquake.py
+├── docker-compose.yaml
+├── metabase/
+│   └── Dockerfile
+└── requirements.txt
+```
 
 ## Используемые технологии
 
@@ -20,6 +24,17 @@
 - **PostgreSQL** – хранилище данных (слои ODS и DM).
 - **Minio** – S3-совместимое хранилище файлов.
 - **Metabase** – инструмент визуализации данных.
+
+
+## Схема пайплайна
+
+```mermaid
+flowchart TD
+    A[USGS API] -->|raw_from_api_to_s3| B[Minio]
+    B -->|raw_from_s3_to_pg| C[PostgreSQL\nods.fct_earthquake]
+    C -->|fct_avg_day_earthquake| D[PostgreSQL\ndm.fct_avg_day_earthquake]
+    C -->|fct_count_day_earthquake| E[PostgreSQL\ndm.fct_count_day_earthquake]
+```
 
 ## Процесс работы пайплайна
 
